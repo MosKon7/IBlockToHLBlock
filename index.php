@@ -68,6 +68,13 @@ function getOrCreateHighloadBlock(string $hlBlockName, string $tableName): int
         'USER_TYPE_ID' => 'integer',
         'EDIT_FORM_LABEL' => array('ru' => 'Родительский ID', 'en' => 'Parent ID'),
     ));
+    $iblockIdUserFieldId = $oUserTypeEntity->Add(array(
+        'ENTITY_ID' => 'HLBLOCK_' . $hlBlockId,
+        'FIELD_NAME' => 'UF_IBLOCK_ID',
+        'XML_ID' => 'UF_IBLOCK_ID',
+        'USER_TYPE_ID' => 'string',
+        'EDIT_FORM_LABEL' => array('ru' => 'ID в Инфоблоке', 'en' => 'ID in iblock'),
+    ));
 
     /**
      * TODO ДЛЯ НОВОГО ЯДРА ТРЕБУЕТСЯ ОБНОВЛЯТЬ ПРАВА ДОСТУПА ДЛЯ HLBLOCK
@@ -172,7 +179,7 @@ function addBranchToHighloadBlock(array $branch, int $hlBlockId, array &$idMappi
 
     // Проверяем существование элемента
     $existingItem = $hlDataClass::getList([
-        'filter' => ['UF_NAME' => $branch['NAME'], 'UF_PARENT' => $parentId],
+        'filter' => ['UF_NAME' => $branch['NAME'], 'UF_IBLOCK_ID' => $branch['ID']],
         'select' => ['ID']
     ])->fetch();
 
@@ -181,6 +188,7 @@ function addBranchToHighloadBlock(array $branch, int $hlBlockId, array &$idMappi
         $result = $hlDataClass::update($existingItem['ID'], [
             'UF_NAME' => $branch['NAME'],
             'UF_PARENT' => $parentId,
+            'UF_IBLOCK_ID' => $branch['ID'],
         ]);
         $newSectionId = $existingItem['ID'];
     } else {
@@ -188,6 +196,7 @@ function addBranchToHighloadBlock(array $branch, int $hlBlockId, array &$idMappi
         $result = $hlDataClass::add([
             'UF_NAME' => $branch['NAME'],
             'UF_PARENT' => $parentId,
+            'UF_IBLOCK_ID' => $branch['ID'],
         ]);
         $newSectionId = $result->getId();
     }
@@ -209,29 +218,29 @@ function addBranchToHighloadBlock(array $branch, int $hlBlockId, array &$idMappi
 }
 ?>
 
-<style>
-    .error { color: red; }
-</style>
+    <style>
+        .error { color: red; }
+    </style>
 
-<h1><?php echo $APPLICATION->GetTitle(false);?></h1>
+    <h1><?php echo $APPLICATION->GetTitle(false);?></h1>
 
-<form action="" method="post">
-    <label for="iblock_id">ID инфоблока:</label>
-    <input type="number" id="iblock_id" name="iblock_id" required><br><br>
+    <form action="" method="post">
+        <label for="iblock_id">ID инфоблока:</label>
+        <input type="number" id="iblock_id" name="iblock_id" required><br><br>
 
-    <label for="root_section_id">ID корневого раздела:</label>
-    <input type="number" id="root_section_id" name="root_section_id" required><br><br>
+        <label for="root_section_id">ID корневого раздела:</label>
+        <input type="number" id="root_section_id" name="root_section_id" required><br><br>
 
-    <label for="hl_block_name">Название Highload-блока:</label>
-    <input type="text" id="hl_block_name" name="hl_block_name" pattern="^[A-Z][A-Za-z0-9]*$" required>
-    <span class="error">* Должно начинаться с заглавной буквы и состоять только из латинских букв и цифр</span><br><br>
+        <label for="hl_block_name">Название Highload-блока:</label>
+        <input type="text" id="hl_block_name" name="hl_block_name" pattern="^[A-Z][A-Za-z0-9]*$" required>
+        <span class="error">* Должно начинаться с заглавной буквы и состоять только из латинских букв и цифр</span><br><br>
 
-    <label for="table_name">Название таблицы:</label>
-    <input type="text" id="table_name" name="table_name" pattern="^[a-z0-9_]+$" required>
-    <span class="error">* Должно состоять только из строчных латинских букв, цифр и знака подчеркивания</span><br><br>
+        <label for="table_name">Название таблицы:</label>
+        <input type="text" id="table_name" name="table_name" pattern="^[a-z0-9_]+$" required>
+        <span class="error">* Должно состоять только из строчных латинских букв, цифр и знака подчеркивания</span><br><br>
 
-    <button type="submit">Запустить перенос</button>
-</form>
+        <button type="submit">Запустить перенос</button>
+    </form>
 
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
